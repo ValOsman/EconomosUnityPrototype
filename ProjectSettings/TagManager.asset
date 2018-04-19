@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags: []
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - 
+  - Water
+  - UI
+  - 
+  - 
+  - Player
+  - Terrain
+  - Locations
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Default
+    uniqueID: 0
+    locked: 0
+  - name: Sea
+    uniqueID: 4264576603
+    locked: 0
+  - name: Ground
+    uniqueID: 3421472213
+    locked: 0
+  - name: Road
+    uniqueID: 900805923
+    locked: 0
+  - name: BlockingLayer
+    uniqueID: 1852217713
+    locked: 0
+  - name: UI
+    uniqueID: 2926036011
+    locked: 0
