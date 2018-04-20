@@ -49,9 +49,13 @@ public class ShowTownMenu : MonoBehaviour {
         
     }
 
-    private void Update()
+    
+    private void OnTriggerExit2D(Collider2D collision)
     {
-
+        if (collision.tag == "Player")
+        {
+            townMenu.enabled = false;
+        }
     }
 
     public void UpdatePrices()
@@ -59,21 +63,15 @@ public class ShowTownMenu : MonoBehaviour {
         foreach (KeyValuePair<ResourceUtil.ResourceType, Market> market in townManager.town.Markets)
         {
             string resourceName = market.Value.Resource.DisplayName;
+            float marketPrice = market.Value.MarketPrice;
 
             Transform row = priceMenuGrid.transform.Find(resourceName + "Row");
-            row.transform.Find("Price").GetComponent<Text>().text = market.Value.MarketPrice.ToString();
+            row.transform.Find("Price").GetComponent<Text>().text = marketPrice.ToString();
 
+            
 
         }
-        
-    }
 
-    private void OnTriggerExit2D(Collider2D collision)
-    {
-        if (collision.tag == "Player")
-        {
-            townMenu.enabled = false;
-        }
     }
 
     public void PlayerBuyGood()
@@ -84,27 +82,30 @@ public class ShowTownMenu : MonoBehaviour {
 
         float price = townManager.town.Markets[type].MarketPrice;        
         List<Entity> availableAsks = townManager.town.Markets[type].AskLedger;
-        float amountAvailable = availableAsks.Sum(agent => agent.Inventory[type].Offer.Amount);
 
         if (PlayerManager.player.HasResource(type) == false)
         {
-            PlayerManager.player.AddResource(type);            
+            PlayerManager.player.AddResource(type);
         }
 
-        if (PlayerManager.player.ResourceInventory[type].Amount < PlayerManager.player.ResourceInventory[type].Max && amountAvailable > 0)
+        if (PlayerManager.player.ResourceInventory[type].Amount < PlayerManager.player.ResourceInventory[type].Max)
         {
             PlayerManager.player.IncrementResource(type);
             PlayerManager.player.Currency -= price;
             EventManager.TriggerEvent("UpdateCurrency");
 
-            availableAsks[0].Inventory[type].Offer.Amount -= 1;
-            availableAsks[0].Inventory[type].Amount -= 1;
-            availableAsks[0].Currency += price;
-
-            if (availableAsks[0].Inventory[type].Offer.Amount < 1)
+            if (availableAsks.Count > 0)
             {
-                availableAsks.RemoveAt(0);
+                availableAsks[0].Inventory[type].Offer.Amount -= 1;
+                availableAsks[0].Inventory[type].Amount -= 1;
+                availableAsks[0].Currency += price;
+
+                if (availableAsks[0].Inventory[type].Offer.Amount < 1)
+                {
+                    availableAsks.RemoveAt(0);
+                }
             }
+
         }
 
 
@@ -119,24 +120,27 @@ public class ShowTownMenu : MonoBehaviour {
 
         float price = townManager.town.Markets[type].MarketPrice;
         List<Entity> availableBids = townManager.town.Markets[type].BidLedger;
-        float amountDesired = availableBids.Sum(agent => agent.Inventory[type].Offer.Amount);
 
         if (PlayerManager.player.HasResource(type))
         {
-            if (PlayerManager.player.ResourceInventory[type].Amount > 0 && amountDesired > 0)
+            if (PlayerManager.player.ResourceInventory[type].Amount > 0)
             {
                 PlayerManager.player.DecrementResource(type);
                 PlayerManager.player.Currency += price;
                 EventManager.TriggerEvent("UpdateCurrency");
 
-                availableBids[0].Inventory[type].Offer.Amount -= 1;
-                availableBids[0].Inventory[type].Amount += 1;
-                availableBids[0].Currency += price;
-
-                if (availableBids[0].Inventory[type].Offer.Amount < 1)
+                if (availableBids.Count > 0)
                 {
-                    availableBids.RemoveAt(0);
+                    availableBids[0].Inventory[type].Offer.Amount -= 1;
+                    availableBids[0].Inventory[type].Amount += 1;
+                    availableBids[0].Currency += price;
+
+                    if (availableBids[0].Inventory[type].Offer.Amount < 1)
+                    {
+                        availableBids.RemoveAt(0);
+                    }
                 }
+
 
             }
         }

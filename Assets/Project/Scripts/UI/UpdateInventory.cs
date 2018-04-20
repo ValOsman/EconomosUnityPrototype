@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿using System;
+using System.Linq;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -48,16 +50,27 @@ public class UpdateInventory : MonoBehaviour {
         row.transform.Find("ResourceLabel").GetComponent<Text>().text = ResourceUtil.GetResourceByType(type).DisplayName;
         row.transform.name = ResourceUtil.GetResourceByType(type).DisplayName + "Row";
         inventoryRows.Add(type, row);
+        ReorderList();
         UpdateInventoryRow(type);
     }
 
     private void ReorderList()
     {
-        Transform firstChild = gameObject.transform.GetChild(0);
-        for (int i = 1; i < gameObject.transform.childCount; i++)
+        List<ResourceUtil.ResourceType> sortedInventoryRows = new List<ResourceUtil.ResourceType>();
+
+        foreach (ResourceUtil.ResourceType resourceType in Enum.GetValues(typeof(AgentEntity.EntityType)))
         {
-            
+            if (inventoryRows.ContainsKey(resourceType))
+            {
+                sortedInventoryRows.Add(resourceType);
+            }
         }
+
+        for (int i = 0; i < sortedInventoryRows.Count; i++)
+        {
+            inventoryRows[sortedInventoryRows[i]].transform.SetSiblingIndex(i);
+        }
+
     }
 
 }

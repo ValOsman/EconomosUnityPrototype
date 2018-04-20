@@ -7,7 +7,7 @@ using UnityEngine;
 public class Player
 {
     public string Name { get; set; }
-    public float Currency { get; set; } = 500;
+    public float Currency { get; set; } = 5000;
     public Dictionary<ResourceUtil.ResourceType, PlayerResourceItem> ResourceInventory { get; set; } = new Dictionary<ResourceUtil.ResourceType, PlayerResourceItem>();
 
     public Player()

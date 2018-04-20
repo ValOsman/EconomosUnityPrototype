@@ -54,11 +54,11 @@ public class TownManager : MonoBehaviour {
 
             town.RemoveBankruptAgents();
             town.ResolveAuctions();
-            town.UpdateProfits();
-
-            menu.UpdatePrices();
+            town.UpdateProfits();            
         }
-        
+
+        menu.UpdatePrices();
+
     }
 
     // Update is called once per frame
@@ -66,12 +66,24 @@ public class TownManager : MonoBehaviour {
 		
 	}
 
+    //These actions and checks occur once every round
     private void RoundActions()
     {
+        if (TimeUtil.Day % 10 == 0)
+        {
+            town.CollectTaxes(10);
+        }
+
+        if (TimeUtil.Day == 30)
+        {
+            town.CheckRequirements();
+        }
+
         foreach (AgentEntity agent in town.Agents)
         {
             agent.PerformProduction();
         }
+
         town.RemoveBankruptAgents();
         town.ResolveAuctions();
         town.UpdateProfits();

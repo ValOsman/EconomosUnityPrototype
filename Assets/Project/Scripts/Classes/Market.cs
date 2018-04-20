@@ -3,14 +3,16 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = System.Random;
 
 public class Market
 {
 
     private int _priceHistoryLimit = 30;
     private int _marketHistoryLimit = 30;
+    private int _transactionHistoryLimit = 10000;
 
-    //private Random _random = new Random(DateTime.Now.Millisecond);
+    private Random _random = new Random(DateTime.Now.Millisecond);
 
     public List<PriceAmountPair> BidBook { get; set; }
     public List<PriceAmountPair> AskBook { get; set; }
@@ -23,12 +25,11 @@ public class Market
     public List<Entity> Agents { get; set; } = new List<Entity>();
     public List<Entity> Buyers { get; set; } = new List<Entity>();
     public List<Entity> Sellers { get; set; } = new List<Entity>();
-    public float Demand { get; private set; } //average number of units demanded from acution each round
+    public float Demand { get; private set; } //average number of units demanded from auction each round
     public float Supply { get; private set; } //average number of units supplied for auction each round
     public Town Town { get; set; } // Town that the market belongs to
-    public List<float> TransactionRecords { get; set; } //Make a TransactionRecord class with seller, buyer, amount, price, and round
-
-
+    public int LastRoundTraded { get; set; } = 1;
+    public List<TransactionRecord> TransactionHistory { get; set; } = new List<TransactionRecord>(); //Make a TransactionRecord class with seller, buyer, amount, price, and round       
 
     public Market(Resource resource)
     {
@@ -58,16 +59,16 @@ public class Market
 
     public void HoldAuctions()
     {
-        MarketHistoryRecord record = new MarketHistoryRecord();
-        List<float> clearingPrices = new List<float>(); //clearing prices in the current round
-
         BidLedger.Clear();
         AskLedger.Clear();
+
+        MarketHistoryRecord record = new MarketHistoryRecord();
+        List<float> clearingPrices = new List<float>(); //clearing prices in the current round
 
         foreach (AgentEntity agent in Agents)
         {
             agent.NumberOfAuctions++;
-            if (agent.Inventory[Resource.Type].MakeOffer == true)
+            if (agent.Inventory[Resource.Type].MakeOffer == true && agent.Inventory[Resource.Type].Offer != null)
             {
                 if (agent.Inventory[Resource.Type].Action == InventoryItem.ActionType.buy)
                 {
@@ -88,7 +89,11 @@ public class Market
             {
                 agent.RoundsWithoutTrading++;
             }
+        }
 
+        if (Town.Inventory[Resource.Type].MakeOffer == true)
+        {
+            BidLedger.Add(Town);
         }
 
         BidLedger.Shuffle();
@@ -100,14 +105,19 @@ public class Market
         record.NumberOfAsks = AskLedger.Count();
         record.NumberOfBids = BidLedger.Count();
 
+        record.Demand = (int)BidLedger.Sum(x => x.Inventory[Resource.Type].Offer.Amount);
+        record.Supply = (int)AskLedger.Sum(x => x.Inventory[Resource.Type].Offer.Amount);
+
+        if (BidLedger.Count > 0 && AskLedger.Count > 0)
+        {
+            LastRoundTraded = TimeUtil.Rounds;
+        }
+        
 
         while (BidLedger.Count > 0 && AskLedger.Count > 0)
         {
             float quantityTraded = Math.Min(BidLedger[0].Inventory[Resource.Type].Offer.Amount, AskLedger[0].Inventory[Resource.Type].Offer.Amount);
             float clearingPrice = (float)Math.Ceiling((BidLedger[0].Inventory[Resource.Type].Offer.Price + AskLedger[0].Inventory[Resource.Type].Offer.Price) / 2);
-
-            record.Demand += (int)BidLedger[0].Inventory[Resource.Type].Offer.Amount;
-            record.Supply += (int)AskLedger[0].Inventory[Resource.Type].Offer.Amount;
 
             if (quantityTraded > 0)
             {
@@ -123,6 +133,8 @@ public class Market
                 UpdatePriceHistory(clearingPrice);
                 clearingPrices.Add(clearingPrice);
 
+                AddTransactionRecord(new TransactionRecord(BidLedger[0], AskLedger[0], clearingPrice, quantityTraded, Resource));
+
                 BidLedger[0].UpdateBidPriceBelief(this, BidLedger[0].Inventory[Resource.Type], true);     //Buyer updates price belief
                 AskLedger[0].UpdateAskPriceBelief(this, AskLedger[0].Inventory[Resource.Type], true);     //Seller updates price belief
 
@@ -136,6 +148,9 @@ public class Market
                 {
                     AskLedger.RemoveAt(0);
                 }
+
+
+
             }
             else
             {
@@ -144,29 +159,39 @@ public class Market
 
         }
 
-        record.MeanClearingPrice = (float)Math.Round(clearingPrices.Sum() / clearingPrices.Count());
+        record.MeanClearingPrice = clearingPrices.Count() > 0 ? (float)Math.Round(clearingPrices.Sum() / clearingPrices.Count()) : 0;
         AddMarketHistoryRecord(record);
 
 
         // Go through offers left over and update their price beliefs, having been rejected
-        foreach (AgentEntity agent in BidLedger)
+        foreach (Entity agent in BidLedger)
         {
             agent.UpdateBidPriceBelief(this, agent.Inventory[Resource.Type], false);
         }
 
-        foreach (AgentEntity agent in AskLedger)
+        foreach (Entity agent in AskLedger)
         {
             agent.UpdateAskPriceBelief(this, agent.Inventory[Resource.Type], false);
         }
-        
+
+        // Deal with supply/demand getting out of control
+        if (TimeUtil.Rounds - LastRoundTraded > 5 || TimeUtil.Rounds == 1)
+        {
+            if (DemandThisRound() > 0)
+            {
+                if ((DemandThisRound() - SupplyThisRound()) / DemandThisRound() * 100 >= 50) // check to see how much more demand there is than supply
+                {
+                    Town.SpawnAgent(Resource.ProducedBy);
+                    Console.WriteLine(String.Format("Round: {0}, Town: {1}; Market: {2}; Supply: {3}, Demand: {4}", TimeUtil.Rounds, Town.Name, Resource.DisplayName, Supply, Demand));
+                }
+            }
+            
+        }
 
     }
 
     public void HoldTownAuctions()
     {
-
-        MarketHistoryRecord record = new MarketHistoryRecord();
-        List<float> clearingPrices = new List<float>(); //clearing prices in the current round
 
         if (Town.Inventory[Resource.Type].MakeOffer == true)
         {
@@ -281,7 +306,6 @@ public class Market
         return MarketHistory[MarketHistory.Count() - 1].Supply;
     }
 
-
     private void AddMarketHistoryRecord(MarketHistoryRecord record)
     {
         MarketHistory.Add(record);
@@ -293,6 +317,30 @@ public class Market
         Demand = (float)Math.Round((MarketHistory.Sum(x => x.Demand) / (float)MarketHistory.Count()), 2);
         Supply = (float)Math.Round((MarketHistory.Sum(x => x.Supply) / (float)MarketHistory.Count()), 2);
 
+    }
+
+    private void AddTransactionRecord(TransactionRecord record)
+    {
+        TransactionHistory.Add(record);
+        if (TransactionHistory.Count > _transactionHistoryLimit)
+        {
+            TransactionHistory.RemoveAt(0);
+        }
+    }
+
+    public List<TransactionRecord> GetAllTransactionsByBuyerType(AgentEntity.EntityType type) //These can also be moved to Town class
+    {
+        return TransactionHistory.Where(record => record.Buyer.Type == type).ToList();
+    }
+
+    public List<TransactionRecord> GetAllTransactionsBySellerType(AgentEntity.EntityType type) //These can also be moved to Town class
+    {
+        return TransactionHistory.Where(record => record.Seller.Type == type).ToList();
+    }
+
+    public List<TransactionRecord> GetAllTransactionsByResource(ResourceUtil.ResourceType type) //This is more relevant in the Town class
+    {
+        return TransactionHistory.Where(record => record.Resource.Type == type).ToList();
     }
 
     public class MarketHistoryRecord
@@ -316,6 +364,37 @@ public class Market
             NumberOfAsks = numAsks;
             Supply = supply;
             Demand = demand;
+        }
+    }
+
+    public class TransactionRecord
+    {
+        public int Round { get; set; }
+        public Entity Buyer { get; set; }
+        public Entity Seller { get; set; }
+        public float ClearingPrice { get; set; }
+        public float AmountTraded { get; set; }
+        public Resource Resource { get; set; }
+
+        public TransactionRecord()
+        {
+
+        }
+
+        public TransactionRecord(Entity buyer, Entity seller, float clearingPrice, float amountTraded, Resource resource)
+        {
+            Round = TimeUtil.Rounds;
+            Buyer = buyer;
+            Seller = seller;
+            ClearingPrice = clearingPrice;
+            AmountTraded = amountTraded;
+            Resource = resource;
+        }
+
+        public string PrintTransactionRecord()
+        {
+            string transactionString = String.Format("{0} bought {1} {2} for {3} gold from {4}.", Buyer.Name, AmountTraded, Resource.DisplayName, ClearingPrice, Seller.Name);
+            return transactionString;
         }
     }
 

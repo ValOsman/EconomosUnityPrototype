@@ -31,7 +31,7 @@ public class AgentEntity : Entity
 
         Name = name;
         Type = type;
-        Currency = 1000;
+        Currency = 500;
         CurrencyLastRound = Currency;
         Inventory = new Dictionary<ResourceUtil.ResourceType, InventoryItem>();
         Markets = new Dictionary<ResourceUtil.ResourceType, Market>();
@@ -43,8 +43,8 @@ public class AgentEntity : Entity
     {
         AddSelfToMarket(resource);
 
-        float priceMin = (float)Math.Round(resource.BasePrice - resource.BasePrice * 0.2);
-        float priceMax = (float)Math.Round(resource.BasePrice + resource.BasePrice * 0.2);
+        float priceMin = (float)Math.Round(resource.BasePrice - resource.BasePrice * 0.5);
+        float priceMax = (float)Math.Round(resource.BasePrice + resource.BasePrice * 0.5);
         PriceRange priceRange = new PriceRange(priceMin, priceMax);
 
         InventoryItem row = new InventoryItem(resource, action, priceRange, max, ideal, amount);
@@ -169,7 +169,42 @@ public class AgentEntity : Entity
 
     private void ProduceOre()
     {
-        ProduceCommodity(ResourceUtil.ResourceType.ore, ResourceUtil.ResourceType.wheat, 2);
+        if (Inventory[ResourceUtil.ResourceType.wheat].Amount > 0 && Inventory[ResourceUtil.ResourceType.wood].Amount > 0)
+        {
+            float output = 2;
+            float amountProduced;
+            float brokenTools = 0;
+            if (Inventory[ResourceUtil.ResourceType.tools].Amount > 0)
+            {
+                amountProduced = output * 2;
+                if (BreakTools() == true)
+                {
+                    Inventory[ResourceUtil.ResourceType.tools].Amount -= 1;
+                    brokenTools = 1;
+                }
+
+            }
+            else
+            {
+                amountProduced = output;
+            }
+
+            Inventory[ResourceUtil.ResourceType.ore].Amount += amountProduced;
+            Inventory[ResourceUtil.ResourceType.wheat].Amount -= 1;
+            Inventory[ResourceUtil.ResourceType.wood].Amount -= 1;
+
+            float wheatCost = Inventory[ResourceUtil.ResourceType.wheat].PriceRange.Mean;
+            float woodCost = Inventory[ResourceUtil.ResourceType.wood].PriceRange.Mean;
+            float toolsCost = Inventory[ResourceUtil.ResourceType.tools].PriceRange.Mean;
+
+            Inventory[ResourceUtil.ResourceType.ore].CostToProduce = (float)Math.Round(wheatCost / amountProduced + woodCost / amountProduced + toolsCost * brokenTools);
+
+        }
+        else
+        {
+            Currency -= 2;
+            RoundsWithoutProduction++;
+        }
     }
 
     private void ProduceMetal()

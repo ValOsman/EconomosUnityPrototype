@@ -42,6 +42,14 @@ public class TimeUtil : MonoBehaviour
 
     }
 
+    public static void ResetTime()
+    {
+        Rounds = 1;
+        Day = 1;
+        Week = 1;
+        Year = 1000;
+    }
+
     public static bool StartOfMonth()
     {
         return (Week == 1) ? true : false;

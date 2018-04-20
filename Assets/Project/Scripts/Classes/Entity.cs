@@ -224,6 +224,9 @@ public abstract class Entity
             }
 
             resource.PriceRange.GrowMax(magnitude);
+
+            //Make sure the max price never exceeds 100 times the base price.
+            resource.PriceRange.Max = resource.PriceRange.Max <= ResourceUtil.GetResourceByType(resource.Resource.Type).BasePrice * 100 ? resource.PriceRange.Max : ResourceUtil.GetResourceByType(resource.Resource.Type).BasePrice * 100;
         }
     }
 
