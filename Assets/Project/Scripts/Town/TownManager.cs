@@ -50,6 +50,7 @@ public class TownManager : MonoBehaviour {
             foreach (AgentEntity agent in town.Agents)
             {
                 agent.PerformProduction();
+
             }
 
             town.RemoveBankruptAgents();
@@ -57,6 +58,7 @@ public class TownManager : MonoBehaviour {
             town.UpdateProfits();            
         }
 
+        town.UpdateGuildPrices();
         menu.UpdatePrices();
 
     }
@@ -68,26 +70,35 @@ public class TownManager : MonoBehaviour {
 
     //These actions and checks occur once every round
     private void RoundActions()
-    {
+    {     
+
         if (TimeUtil.Day % 10 == 0)
         {
             town.CollectTaxes(10);
+            town.DisburseGuildProfits();
         }
 
         if (TimeUtil.Day == 30)
         {
-            town.CheckRequirements();
+            town.CheckRequirements();         
         }
 
         foreach (AgentEntity agent in town.Agents)
         {
             agent.PerformProduction();
+            agent.DonateResourceToGuild();
         }
 
         town.RemoveBankruptAgents();
         town.ResolveAuctions();
         town.UpdateProfits();
 
+        if (TimeUtil.Day % 2 == 0)
+        {
+            
+        }
+
+        town.UpdateGuildPrices();
         menu.UpdatePrices();
     }
 }

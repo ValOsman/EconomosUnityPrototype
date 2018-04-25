@@ -24,11 +24,7 @@ public class PriceRange
             else if (value <= _max)
             {
                 _min = value;
-            }
-            else
-            {
-                _min = _max - 1;
-            }
+            }            
             UpdateMean();
         }
     }
@@ -37,13 +33,13 @@ public class PriceRange
         get { return _max; }
         set
         {
-            if (value > _min)
+            if (value >= _min)
             {
                 _max = value;
             }
-            else
+            else if (value < _min)
             {
-                _max = _min + 1;
+                _max = _min;
             }
 
             UpdateMean();
@@ -121,14 +117,7 @@ public class PriceRange
         {
             Min = (float)Math.Round(Min + interval * magnitude);
         }
-
-        float maxDifference = oldMax - Max;
-        float minDifference = oldMin - Min;
-
-        if (maxDifference / oldMax * 100 > 200 || minDifference / oldMin * 100 > 200)
-        {
-            Console.WriteLine("Wtf u doin");
-        }
+        
     }
 
     public bool InRange(float number)
