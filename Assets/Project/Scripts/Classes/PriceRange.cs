@@ -24,7 +24,12 @@ public class PriceRange
             else if (value <= _max)
             {
                 _min = value;
-            }            
+            }
+            else if (value > _max)
+            {
+                _min = value;
+                _max = value;
+            }
             UpdateMean();
         }
     }

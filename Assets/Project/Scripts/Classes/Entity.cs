@@ -13,13 +13,13 @@ public abstract class Entity
 
     private const float _maxPriceFactor = 100;
 
-    public enum EntityType { farmer, woodcutter, miner, smelter, blacksmith, town }
+    public enum EntityType { farmer, woodcutter, miner, smelter, blacksmith, town, village}
 
     public string Name { get; set; }
     public float Currency { get; set; }
     public int RoundCreated { get; private set; } = TimeUtil.Rounds;
     public AgentEntity.EntityType Type { get; set; }
-    public Dictionary<ResourceUtil.ResourceType, InventoryItem> Inventory { get; set; }
+    public Dictionary<ResourceUtil.ResourceType, InventoryItem> Inventory { get; set; } = new Dictionary<ResourceUtil.ResourceType, InventoryItem>();
     public Dictionary<ResourceUtil.ResourceType, Market> Markets;
 
     public Entity()
@@ -167,7 +167,7 @@ public abstract class Entity
 
         float favorabilty = 1 - FindFavorability(resource.PriceRange, mean);
 
-        float amountToBuy = (float)Math.Round(favorabilty * resource.Shortage());
+        float amountToBuy = (float)Math.Ceiling(favorabilty * resource.Shortage());
 
         if (amountToBuy > resource.Max)
         {
@@ -188,7 +188,7 @@ public abstract class Entity
 
         float favorabilty = FindFavorability(resource.PriceRange, mean);
 
-        float amountToSell = (float)Math.Round(favorabilty * resource.Surplus());
+        float amountToSell = (float)Math.Ceiling(favorabilty * resource.Surplus());
 
         if (amountToSell > resource.Amount)
         {
@@ -259,7 +259,8 @@ public abstract class Entity
         }
     
         //Make sure the max price never exceeds 50 times the base price or below base price
-        resource.PriceRange.Max = resource.PriceRange.Max <= ResourceUtil.GetResourceByType(resource.Resource.Type).BasePrice * _maxPriceFactor ? resource.PriceRange.Max : ResourceUtil.GetResourceByType(resource.Resource.Type).BasePrice * _maxPriceFactor;
+        //resource.PriceRange.Max = resource.PriceRange.Max <= ResourceUtil.GetResourceByType(resource.Resource.Type).BasePrice * _maxPriceFactor ? resource.PriceRange.Max : ResourceUtil.GetResourceByType(resource.Resource.Type).BasePrice * _maxPriceFactor;
+        //resource.PriceRange.Min = resource.PriceRange.Min > ResourceUtil.GetResourceByType(resource.Resource.Type).BasePrice ? resource.PriceRange.Min : ResourceUtil.GetResourceByType(resource.Resource.Type).BasePrice;
     }
 
     public void UpdateAskPriceBelief(Market market, InventoryItem resource, bool askAccepted)
@@ -317,8 +318,8 @@ public abstract class Entity
         }
 
         //Make sure the max price never exceeds 50 times the base price
-        resource.PriceRange.Max = resource.PriceRange.Max <= ResourceUtil.GetResourceByType(resource.Resource.Type).BasePrice * _maxPriceFactor ? resource.PriceRange.Max : ResourceUtil.GetResourceByType(resource.Resource.Type).BasePrice * _maxPriceFactor;
-        resource.PriceRange.Min = resource.PriceRange.Min > ResourceUtil.GetResourceByType(resource.Resource.Type).BasePrice ? resource.PriceRange.Min : ResourceUtil.GetResourceByType(resource.Resource.Type).BasePrice;
+        //resource.PriceRange.Max = resource.PriceRange.Max <= ResourceUtil.GetResourceByType(resource.Resource.Type).BasePrice * _maxPriceFactor ? resource.PriceRange.Max : ResourceUtil.GetResourceByType(resource.Resource.Type).BasePrice * _maxPriceFactor;
+        //resource.PriceRange.Min = resource.PriceRange.Min > ResourceUtil.GetResourceByType(resource.Resource.Type).BasePrice ? resource.PriceRange.Min : ResourceUtil.GetResourceByType(resource.Resource.Type).BasePrice;
     }
 
     public float FindFavorability(PriceRange range, float mean)

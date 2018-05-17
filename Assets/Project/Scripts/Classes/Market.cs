@@ -306,6 +306,24 @@ public class Market
         return MarketHistory[MarketHistory.Count() - 1].Supply;
     }
 
+    public float RecentDemandAverage()
+    {
+        float numberOfRounds = MarketHistory.Count >= 15 ? 15 : MarketHistory.Count;
+
+        float demand = (float)Math.Round((MarketHistory.Sum(x => x.Demand) / numberOfRounds), 2);
+
+        return demand;
+    }
+
+    public float RecentSupplyAverage()
+    {
+        float numberOfRounds = MarketHistory.Count >= 15 ? 15 : MarketHistory.Count;
+
+        float supply = (float)Math.Round((MarketHistory.Sum(x => x.Supply) / numberOfRounds), 2);
+
+        return supply;
+    }
+
     private void AddMarketHistoryRecord(MarketHistoryRecord record)
     {
         MarketHistory.Add(record);

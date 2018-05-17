@@ -43,6 +43,16 @@ public class Guild : Entity
     public void AddMember(AgentEntity agent)
     {
         Members.Add(agent);
+
+        if (Members.Count == 1)
+        {
+            Guildmaster = agent;
+        }
+    }
+
+    public void RemoveMember(AgentEntity agent)
+    {
+        Members.Remove(agent);
     }
 
     public int MemberCount()
@@ -67,7 +77,10 @@ public class Guild : Entity
 
         float price = (float)Math.Ceiling(priceSum / Members.Count);
 
-        price = Math.Max(price, Town.Markets[Resource.Type].MarketPrice);
+        float premiumMarketPrice = (float)Math.Ceiling(Town.Markets[Resource.Type].MarketPrice + Town.Markets[Resource.Type].MarketPrice * 0.1f);
+
+        price = Math.Max(price, premiumMarketPrice);
+
 
         ResourcePool.PriceRange.Min = price;
         ResourcePool.PriceRange.Max = price;

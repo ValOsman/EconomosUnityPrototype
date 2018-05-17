@@ -8,6 +8,6 @@ public class DDOL : MonoBehaviour {
     {
         DontDestroyOnLoad(gameObject);
         Debug.Log("Preload");
-        UnityEngine.SceneManagement.SceneManager.LoadScene("Main");
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Continent-Test");
     }
 }
