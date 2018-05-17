@@ -59,18 +59,8 @@ public class TownController : MonoBehaviour {
         }
 
         town.UpdateGuildPrices();
-<<<<<<< HEAD:Assets/Project/Scripts/Town/TownController.cs
-        //menu.UpdatePrices();
-=======
-        menu.UpdatePrices();
->>>>>>> origin/master:Assets/Project/Scripts/Town/TownController.cs
 
     }
-
-    // Update is called once per frame
-    void Update () {
-		
-	}
 
     //These actions and checks occur once every round
     private void RoundActions()

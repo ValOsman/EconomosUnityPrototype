@@ -40,7 +40,7 @@ GameObject:
   - component: {fileID: 212339050230840668}
   - component: {fileID: 61905504365325544}
   - component: {fileID: 114779450776033496}
-  - component: {fileID: 114190025619727818}
+  - component: {fileID: 114212819019225506}
   m_Layer: 0
   m_Name: Farmlands
   m_TagString: Untagged
@@ -87,20 +87,6 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1.1750793, y: 2.2917328}
   m_EdgeRadius: 0
---- !u!114 &114190025619727818
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1795832940303474}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 02441a72134c89e46989fd081e7d9c2f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  villageMenu: {fileID: 223210817055337828}
-  villageCard: {fileID: 224936906919826316, guid: 6dd151c06c6ff454fab6154342feb1a0,
-    type: 2}
 --- !u!114 &114204936921828860
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -117,6 +103,20 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &114212819019225506
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1795832940303474}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bda0ea98fa3b734694ffbabfaf40a07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  villageMenu: {fileID: 223210817055337828}
+  villageCard: {fileID: 224936906919826316, guid: bbe3c3b4135a29a4f9803551c3797dcf,
+    type: 2}
 --- !u!114 &114404425377029646
 MonoBehaviour:
   m_ObjectHideFlags: 1

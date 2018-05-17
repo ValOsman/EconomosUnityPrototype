@@ -40,11 +40,7 @@ GameObject:
   - component: {fileID: 212309698868224638}
   - component: {fileID: 61964119806920476}
   - component: {fileID: 114160379604142334}
-<<<<<<< HEAD
-  - component: {fileID: 114872189705504146}
-=======
-  - component: {fileID: 114864431533874018}
->>>>>>> origin/master
+  - component: {fileID: 114558692135671282}
   m_Layer: 0
   m_Name: Logging Camp
   m_TagString: Untagged
@@ -103,6 +99,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   villageResource: 1
+--- !u!114 &114558692135671282
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1340278404443828}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bda0ea98fa3b734694ffbabfaf40a07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  villageMenu: {fileID: 223344617565703816}
+  villageCard: {fileID: 224936906919826316, guid: bbe3c3b4135a29a4f9803551c3797dcf,
+    type: 2}
 --- !u!114 &114847206148834566
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -119,32 +129,6 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
-<<<<<<< HEAD
---- !u!114 &114872189705504146
-=======
---- !u!114 &114864431533874018
->>>>>>> origin/master
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1340278404443828}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-<<<<<<< HEAD
-  m_Script: {fileID: 11500000, guid: 0bda0ea98fa3b734694ffbabfaf40a07, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  villageMenu: {fileID: 223344617565703816}
-  villageCard: {fileID: 224936906919826316, guid: bbe3c3b4135a29a4f9803551c3797dcf,
-=======
-  m_Script: {fileID: 11500000, guid: 02441a72134c89e46989fd081e7d9c2f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  villageMenu: {fileID: 223344617565703816}
-  villageCard: {fileID: 224936906919826316, guid: 6dd151c06c6ff454fab6154342feb1a0,
->>>>>>> origin/master
-    type: 2}
 --- !u!114 &114973868436682612
 MonoBehaviour:
   m_ObjectHideFlags: 1
