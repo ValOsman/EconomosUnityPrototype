@@ -56,7 +56,6 @@ public class AgentEntity : Entity
         if (action == InventoryItem.ActionType.sell)
         {
             CommodityProduced = resource;
-            AddSelfToGuild(resource);
         }
 
         Inventory.Add(resource.Type, row);
@@ -108,7 +107,7 @@ public class AgentEntity : Entity
 
     public void DonateResourceToGuild(float amount = 1)
     {
-        if (Inventory[CommodityProduced.Type].Amount >= amount)
+        if (Inventory[CommodityProduced.Type].Amount >= amount + 1)
         {
             Inventory[CommodityProduced.Type].Amount -= amount;
             Guild.AddToPool(amount);
@@ -175,7 +174,7 @@ public class AgentEntity : Entity
             Inventory[consume].Amount -= 1;
 
             float consumedResourceCost = Inventory[consume].PriceRange.Mean;
-            float toolsCost = Inventory[ResourceUtil.ResourceType.tools].PriceRange.Mean;
+            float toolsCost = 0;// Inventory[ResourceUtil.ResourceType.tools].PriceRange.Mean;
 
             Inventory[produce].CostToProduce = (float)Math.Round(consumedResourceCost / amountProduced + toolsCost * brokenTools);
             RoundsWithoutProduction = 0;
@@ -219,14 +218,36 @@ public class AgentEntity : Entity
             {
                 amountProduced = output;
             }
+            
+            ////
+            ////
+            ////
+            if (TimeUtil.Rounds >= 11 && TimeUtil.Rounds <= 25)
+            {
+                amountProduced *= 0.25f;
+            }
+            if (TimeUtil.Rounds >= 26 && TimeUtil.Rounds <= 30)
+            {
+                amountProduced *= 0.75f;
+            }
+            if (TimeUtil.Rounds >= 31)
+            {
+                amountProduced *= 1.5f;
+            }
+
+            amountProduced = (float)Math.Round(amountProduced);
+            ////
+            ////
+            ////
 
             Inventory[ResourceUtil.ResourceType.ore].Amount += amountProduced;
             Inventory[ResourceUtil.ResourceType.wheat].Amount -= 1;
             Inventory[ResourceUtil.ResourceType.wood].Amount -= 1;
 
+
             float wheatCost = Inventory[ResourceUtil.ResourceType.wheat].PriceRange.Mean;
             float woodCost = Inventory[ResourceUtil.ResourceType.wood].PriceRange.Mean;
-            float toolsCost = Inventory[ResourceUtil.ResourceType.tools].PriceRange.Mean;
+            float toolsCost = 0; // Inventory[ResourceUtil.ResourceType.tools].PriceRange.Mean;
 
             Inventory[ResourceUtil.ResourceType.ore].CostToProduce = (float)Math.Round(wheatCost / amountProduced + woodCost / amountProduced + toolsCost * brokenTools);
             RoundsWithoutProduction = 0;
@@ -264,7 +285,7 @@ public class AgentEntity : Entity
 
             float wheatCost = Inventory[ResourceUtil.ResourceType.wheat].PriceRange.Mean;
             float oreCost = Inventory[ResourceUtil.ResourceType.ore].PriceRange.Mean;
-            float toolsCost = Inventory[ResourceUtil.ResourceType.tools].PriceRange.Mean;
+            float toolsCost = 0; // Inventory[ResourceUtil.ResourceType.tools].PriceRange.Mean;
             
             Inventory[ResourceUtil.ResourceType.metal].CostToProduce = (float)Math.Round(wheatCost / amountProduced + oreCost + toolsCost * brokenTools);
             RoundsWithoutProduction = 0;

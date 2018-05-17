@@ -20,6 +20,6 @@ public class UpdateCurrency : MonoBehaviour {
 
     public void UpdateCurrencyUI()
     {
-        currencyText.GetComponent<Text>().text = PlayerManager.player.Currency.ToString();
+        currencyText.GetComponent<Text>().text = PlayerController.player.Currency.ToString();
     }
 }
