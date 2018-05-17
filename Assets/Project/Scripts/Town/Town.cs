@@ -3,7 +3,6 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using Random = System.Random;
-using UnityEngine;
 
 public class Town : Entity
 {
@@ -11,8 +10,11 @@ public class Town : Entity
     public string Id { get; private set; }
     public List<AgentEntity> Agents { get; set; }
     public List<Resource> Resources { get; set; }
+    public Dictionary<Entity.EntityType, Guild> Guilds { get; set; }
     public float Population { get; set; }
     public Dictionary<AgentEntity.EntityType, int> AgentTypeCount { get; set; }
+    public List<KeyValuePair<ResourceUtil.ResourceType, float>> PriceModifiers { get; set; }
+    public List<KeyValuePair<ResourceUtil.ResourceType, float>> ProductionModifiers { get; set; }
     public float ResourceRequirementRatio { get; set; }
     public Tuple<float, float> IncomeRatio { get; set; } //earn X dollars for every Y population
 
@@ -21,11 +23,14 @@ public class Town : Entity
         Name = name;
         Type = EntityType.town;
         Markets = new Dictionary<ResourceUtil.ResourceType, Market>();
+        Guilds = new Dictionary<Entity.EntityType, Guild>();
         Population = 100;
-        Currency = Population * 1000;
+        Currency = Population * 100;
         Agents = new List<AgentEntity>();
         AgentTypeCount = new Dictionary<AgentEntity.EntityType, int>();
         Inventory = new Dictionary<ResourceUtil.ResourceType, InventoryItem>();
+        PriceModifiers = new List<KeyValuePair<ResourceUtil.ResourceType, float>>();
+        ProductionModifiers = new List<KeyValuePair<ResourceUtil.ResourceType, float>>();
         ResourceRequirementRatio = 0.10f;
         IncomeRatio = new Tuple<float, float>(5, 1);
     }
@@ -79,6 +84,22 @@ public class Town : Entity
         Markets[resource.Type].AddAgent(agent);
     }
 
+    public void AddAgentToGuild(AgentEntity agent)
+    {
+        if (Guilds.ContainsKey(agent.Type) == true)
+        {
+            Guilds[agent.Type].AddMember(agent);
+        }
+        else
+        {
+            Guild guild = new Guild(agent, this);
+            Guilds.Add(agent.Type, guild);
+        }
+
+        agent.Guild = Guilds[agent.Type];
+
+    }
+
     public void RemoveBankruptAgents()
     {
         AgentEntity removedAgent;
@@ -97,9 +118,9 @@ public class Town : Entity
                 }
                 else
                 {
-                    SpawnAgent(MostProfitableAgentType());
+                    SpawnMostProfitableAgent();
                 }
-
+                
             }
         }
     }
@@ -116,6 +137,11 @@ public class Town : Entity
         int result = r.Next(agentTypes.Count() - 1);
 
         SpawnAgent(agentTypes[result]);
+    }
+
+    public void SpawnMostDemandedAgent()
+    {
+        SpawnAgent(MostDemandedAgentType());
     }
 
     public void GenerateAgentOffers()
@@ -161,7 +187,28 @@ public class Town : Entity
 
     }
 
-    public void IncrementAgentType(AgentEntity.EntityType type)
+    public void DisburseGuildProfits()
+    {
+        foreach(KeyValuePair<Entity.EntityType, Guild> guild in Guilds)
+        {
+            guild.Value.DisburseProfits();
+        }
+    }
+
+    public void UpdateGuildPrices()
+    {
+        foreach (KeyValuePair<Entity.EntityType, Guild> guild in Guilds)
+        {
+            guild.Value.SetPrice();
+        }
+    }
+
+    public void GeneratePlayerPricing()
+    {
+        //DO THIS
+    }
+
+    private void IncrementAgentType(AgentEntity.EntityType type)
     {
         if (AgentTypeCount.ContainsKey(type))
         {
@@ -173,7 +220,7 @@ public class Town : Entity
         }
     }
 
-    public AgentEntity.EntityType MostProfitableAgentType()
+    private AgentEntity.EntityType MostProfitableAgentType()
     {
         float sumOfProfits = 0;
         float meanProfit = 0;
@@ -206,6 +253,28 @@ public class Town : Entity
         return mostProfitable;
     }
 
+    private AgentEntity.EntityType MostDemandedAgentType()
+    {
+        float difference = 0;
+        float greatestDifference = 0;
+        AgentEntity.EntityType mostDemandedAgentType = new AgentEntity.EntityType();
+
+        foreach (KeyValuePair<ResourceUtil.ResourceType, Market> market in Markets)
+        {
+            difference = market.Value.RecentDemandAverage() - market.Value.RecentSupplyAverage();
+
+            if (difference > 0 && difference > greatestDifference)
+            {
+                greatestDifference = difference;
+                mostDemandedAgentType = market.Value.Resource.ProducedBy;
+            }
+
+        }
+
+        return mostDemandedAgentType;
+
+    }
+
     public Dictionary<AgentEntity.EntityType, int> GetAgentDistribution()
     {
         Dictionary<AgentEntity.EntityType, int> agentDistribution = new Dictionary<AgentEntity.EntityType, int>();
@@ -226,6 +295,7 @@ public class Town : Entity
         {
             market.RemoveAgent(agent);
         }
+        Guilds[agent.Type].RemoveMember(agent);
         Agents.Remove(agent);
     }
 
@@ -250,15 +320,17 @@ public class Town : Entity
                 SpawnBlacksmith();
                 break;
         }
+        AgentEntity newAgent = Agents[Agents.Count - 1];
+        AddAgentToGuild(newAgent);
     }
 
     private void SpawnFarmer()
     {
         AgentEntity farmer = new AgentEntity("Farmer" + String.Format("{0:D3}", AgentTypeCount[AgentEntity.EntityType.farmer]), AgentEntity.EntityType.farmer);
         farmer.Town = this;
-        farmer.AddResource(ResourceUtil.Wheat, InventoryItem.ActionType.sell, 20, 0);
-        farmer.AddResource(ResourceUtil.Wood, InventoryItem.ActionType.buy, 20, 5, 3);
-        farmer.AddResource(ResourceUtil.Tools, InventoryItem.ActionType.buy, 20, 4);
+        farmer.AddResource(ResourceUtil.Wheat, InventoryItem.ActionType.sell, 10, 0);
+        farmer.AddResource(ResourceUtil.Wood, InventoryItem.ActionType.buy, 10, 5, 2);
+        farmer.AddResource(ResourceUtil.Tools, InventoryItem.ActionType.buy, 10, 2, 1);
 
         Agents.Add(farmer);
 
@@ -268,9 +340,9 @@ public class Town : Entity
     {
         AgentEntity woodcutter = new AgentEntity("Woodcutter" + String.Format("{0:D3}", AgentTypeCount[AgentEntity.EntityType.woodcutter]), AgentEntity.EntityType.woodcutter);
         woodcutter.Town = this;
-        woodcutter.AddResource(ResourceUtil.Wood, InventoryItem.ActionType.sell, 20, 0);
-        woodcutter.AddResource(ResourceUtil.Wheat, InventoryItem.ActionType.buy, 20, 5, 3);
-        woodcutter.AddResource(ResourceUtil.Tools, InventoryItem.ActionType.buy, 20, 4);
+        woodcutter.AddResource(ResourceUtil.Wood, InventoryItem.ActionType.sell, 10, 0);
+        woodcutter.AddResource(ResourceUtil.Wheat, InventoryItem.ActionType.buy, 10, 4, 1);
+        woodcutter.AddResource(ResourceUtil.Tools, InventoryItem.ActionType.buy, 10, 2, 1);
 
         Agents.Add(woodcutter);
     }
@@ -279,10 +351,10 @@ public class Town : Entity
     {
         AgentEntity miner = new AgentEntity("Miner" + String.Format("{0:D3}", AgentTypeCount[AgentEntity.EntityType.miner]), AgentEntity.EntityType.miner);
         miner.Town = this;
-        miner.AddResource(ResourceUtil.Ore, InventoryItem.ActionType.sell, 20, 0);
-        miner.AddResource(ResourceUtil.Wheat, InventoryItem.ActionType.buy, 20, 5, 3);
-        miner.AddResource(ResourceUtil.Wood, InventoryItem.ActionType.buy, 20, 5, 3);
-        miner.AddResource(ResourceUtil.Tools, InventoryItem.ActionType.buy, 20, 4);
+        miner.AddResource(ResourceUtil.Ore, InventoryItem.ActionType.sell, 10, 0);
+        miner.AddResource(ResourceUtil.Wheat, InventoryItem.ActionType.buy, 10, 4, 1);
+        miner.AddResource(ResourceUtil.Wood, InventoryItem.ActionType.buy, 10, 4, 1);
+        miner.AddResource(ResourceUtil.Tools, InventoryItem.ActionType.buy, 10, 2, 1);
 
         Agents.Add(miner);
     }
@@ -291,10 +363,10 @@ public class Town : Entity
     {
         AgentEntity smelter = new AgentEntity("Smelter" + String.Format("{0:D3}", AgentTypeCount[AgentEntity.EntityType.smelter]), AgentEntity.EntityType.smelter);
         smelter.Town = this;
-        smelter.AddResource(ResourceUtil.Metal, InventoryItem.ActionType.sell, 20, 0);
-        smelter.AddResource(ResourceUtil.Ore, InventoryItem.ActionType.buy, 20, 10, 3);
-        smelter.AddResource(ResourceUtil.Wheat, InventoryItem.ActionType.buy, 20, 5, 2);
-        smelter.AddResource(ResourceUtil.Tools, InventoryItem.ActionType.buy, 20, 4);
+        smelter.AddResource(ResourceUtil.Metal, InventoryItem.ActionType.sell, 10, 0);
+        smelter.AddResource(ResourceUtil.Ore, InventoryItem.ActionType.buy, 10, 4, 4);
+        smelter.AddResource(ResourceUtil.Wheat, InventoryItem.ActionType.buy, 10, 4, 2);
+        smelter.AddResource(ResourceUtil.Tools, InventoryItem.ActionType.buy, 10, 2, 1);
 
         Agents.Add(smelter);
     }
@@ -303,9 +375,9 @@ public class Town : Entity
     {
         AgentEntity blacksmith = new AgentEntity("Blacksmith" + String.Format("{0:D3}", AgentTypeCount[AgentEntity.EntityType.blacksmith]), AgentEntity.EntityType.blacksmith);
         blacksmith.Town = this;
-        blacksmith.AddResource(ResourceUtil.Tools, InventoryItem.ActionType.sell, 20, 0);
-        blacksmith.AddResource(ResourceUtil.Wheat, InventoryItem.ActionType.buy, 20, 5, 3);
-        blacksmith.AddResource(ResourceUtil.Metal, InventoryItem.ActionType.buy, 20, 5, 3);
+        blacksmith.AddResource(ResourceUtil.Tools, InventoryItem.ActionType.sell, 10, 0);
+        blacksmith.AddResource(ResourceUtil.Wheat, InventoryItem.ActionType.buy, 10, 4, 2);
+        blacksmith.AddResource(ResourceUtil.Metal, InventoryItem.ActionType.buy, 10, 4, 4);
 
         Agents.Add(blacksmith);
     }

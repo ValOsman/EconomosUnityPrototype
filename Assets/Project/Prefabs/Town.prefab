@@ -94,8 +94,8 @@ GameObject:
   - component: {fileID: 212258461778541796}
   - component: {fileID: 61943507660490468}
   - component: {fileID: 61747214103038524}
-  - component: {fileID: 114002955876730978}
-  - component: {fileID: 114163256303707492}
+  - component: {fileID: 114583947803472736}
+  - component: {fileID: 114908644868545026}
   m_Layer: 0
   m_Name: Town
   m_TagString: Untagged
@@ -111,7 +111,7 @@ Transform:
   m_GameObject: {fileID: 1563177892548652}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -102.4, y: -152.5, z: 0}
-  m_LocalScale: {x: 6.5, y: 6.5, z: 1.2}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 224937182653431762}
   m_Father: {fileID: 0}
@@ -167,31 +167,6 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 2, y: 1.8953114}
   m_EdgeRadius: 0
---- !u!114 &114002955876730978
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1563177892548652}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4f3d68bee7ef3cc478fe8fb21919f12a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &114163256303707492
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1563177892548652}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a03b2b1933b5cc84fb6cf962add0cfaa, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  townMenu: {fileID: 223266902564755404}
-  priceMenuRow: {fileID: 224351025441083162, guid: bd640e74c82dad64b93d4039dfba74c6,
-    type: 2}
 --- !u!114 &114166150293505042
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -349,6 +324,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_HorizontalFit: 0
   m_VerticalFit: 2
+--- !u!114 &114583947803472736
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1563177892548652}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 955a0f5639fe94749aaeb9e6c5615f70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  townMenu: {fileID: 223266902564755404}
+  priceMenuRow: {fileID: 224351025441083162, guid: 87ec9a860e2a3db43a25c34f9f5a38cd,
+    type: 2}
 --- !u!114 &114626748054637790
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -403,6 +392,17 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: -1.02
   m_Text: X
+--- !u!114 &114908644868545026
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1563177892548652}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cbee8e9ed1f04d94ba412c17cdb3883d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!212 &212258461778541796
 SpriteRenderer:
   m_ObjectHideFlags: 1
@@ -416,6 +416,7 @@ SpriteRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RenderingLayerMask: 4294967295
   m_Materials:
   - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
   m_StaticBatchInfo:
@@ -519,7 +520,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.87}
+  m_AnchoredPosition: {x: 0, y: 0.87000084}
   m_SizeDelta: {x: 0, y: -1.73}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224431349056867210

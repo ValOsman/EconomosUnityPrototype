@@ -67,5 +67,15 @@ public class Player
         }
     }
 
+    public void TransferCurrency(Entity recipient, float amount)
+    {
+        Currency -= amount;
+        recipient.Currency += amount;
+    }
 
+    public void TransferResource(Entity recipient, ResourceUtil.ResourceType type, float amount)
+    {
+        DecrementResource(type, amount);
+        recipient.Inventory[type].Amount += amount;
+    }
 }

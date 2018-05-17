@@ -24,7 +24,6 @@ GameObject:
   - component: {fileID: 61342548087070266}
   - component: {fileID: 114331636916881116}
   - component: {fileID: 95765533185858228}
-  - component: {fileID: 114695904309736290}
   m_Layer: 8
   m_Name: Player
   m_TagString: Player
@@ -107,6 +106,7 @@ Animator:
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!114 &114331636916881116
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -120,17 +120,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 0.5
   animator: {fileID: 95765533185858228}
---- !u!114 &114695904309736290
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1285220323499472}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f6e2ed6e95a47b44d961554047984710, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!212 &212588701025117818
 SpriteRenderer:
   m_ObjectHideFlags: 1
@@ -144,6 +133,7 @@ SpriteRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RenderingLayerMask: 4294967295
   m_Materials:
   - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
   m_StaticBatchInfo:

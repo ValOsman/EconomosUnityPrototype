@@ -23,7 +23,7 @@ public class UpdateInventory : MonoBehaviour {
 
     public void UpdateInventoryUI()
     {
-        Dictionary<ResourceUtil.ResourceType, Player.PlayerResourceItem> playerInventory = PlayerManager.player.ResourceInventory;
+        Dictionary<ResourceUtil.ResourceType, Player.PlayerResourceItem> playerInventory = PlayerController.player.ResourceInventory;
 
         foreach (KeyValuePair<ResourceUtil.ResourceType, Player.PlayerResourceItem> resource in playerInventory)
         {
@@ -41,7 +41,7 @@ public class UpdateInventory : MonoBehaviour {
 
     private void UpdateInventoryRow(ResourceUtil.ResourceType type)
     {
-        inventoryRows[type].transform.Find("Amount").GetComponent<Text>().text = PlayerManager.player.ResourceInventory[type].Amount.ToString() + "/" + PlayerManager.player.ResourceInventory[type].Max.ToString();
+        inventoryRows[type].transform.Find("Amount").GetComponent<Text>().text = PlayerController.player.ResourceInventory[type].Amount.ToString() + "/" + PlayerController.player.ResourceInventory[type].Max.ToString();
     }
 
     private void AddInventoryRow(ResourceUtil.ResourceType type)

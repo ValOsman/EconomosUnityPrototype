@@ -179,7 +179,7 @@ public class Market
         {
             if (DemandThisRound() > 0)
             {
-                if ((DemandThisRound() - SupplyThisRound()) / DemandThisRound() * 100 >= 50) // check to see how much more demand there is than supply
+                if ((DemandThisRound() - SupplyThisRound()) / DemandThisRound() * 100 >= 75) // check to see how much more demand there is than supply
                 {
                     Town.SpawnAgent(Resource.ProducedBy);
                     Console.WriteLine(String.Format("Round: {0}, Town: {1}; Market: {2}; Supply: {3}, Demand: {4}", TimeUtil.Rounds, Town.Name, Resource.DisplayName, Supply, Demand));
@@ -304,6 +304,24 @@ public class Market
     public int SupplyThisRound()
     {
         return MarketHistory[MarketHistory.Count() - 1].Supply;
+    }
+
+    public float RecentDemandAverage()
+    {
+        float numberOfRounds = MarketHistory.Count >= 15 ? 15 : MarketHistory.Count;
+
+        float demand = (float)Math.Round((MarketHistory.Sum(x => x.Demand) / numberOfRounds), 2);
+
+        return demand;
+    }
+
+    public float RecentSupplyAverage()
+    {
+        float numberOfRounds = MarketHistory.Count >= 15 ? 15 : MarketHistory.Count;
+
+        float supply = (float)Math.Round((MarketHistory.Sum(x => x.Supply) / numberOfRounds), 2);
+
+        return supply;
     }
 
     private void AddMarketHistoryRecord(MarketHistoryRecord record)
