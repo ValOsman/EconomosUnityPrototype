@@ -16,6 +16,7 @@ public class TownView : MonoBehaviour {
 
     private TownController townController;
 
+<<<<<<< HEAD
     private void Awake()
     {
         townController = gameObject.GetComponent<TownController>();
@@ -26,6 +27,14 @@ public class TownView : MonoBehaviour {
     private void Start()
     {
         townMenu.enabled = false;
+=======
+    private void Start()
+    {
+        townMenu.enabled = false;
+        townController = gameObject.GetComponent<TownController>();
+        rows = new Dictionary<Transform, ResourceUtil.ResourceType>();
+        priceMenuGrid = townMenu.transform.Find("PriceGrid");
+>>>>>>> origin/master
 
         foreach (KeyValuePair<ResourceUtil.ResourceType, Market> market in townController.town.Markets)
         {
