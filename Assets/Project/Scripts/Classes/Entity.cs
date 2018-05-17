@@ -9,7 +9,9 @@ public abstract class Entity
     private const float _overpayFactor = 0.5f;
     private const float _underchargingFactor = 0.5f;
 
-    private const float _priceAdjustmentFactor = 0.10f;
+    private const float _priceAdjustmentFactor = 0.05f;
+
+    private const float _maxPriceFactor = 100;
 
     public enum EntityType { farmer, woodcutter, miner, smelter, blacksmith, town }
 
@@ -19,6 +21,11 @@ public abstract class Entity
     public AgentEntity.EntityType Type { get; set; }
     public Dictionary<ResourceUtil.ResourceType, InventoryItem> Inventory { get; set; }
     public Dictionary<ResourceUtil.ResourceType, Market> Markets;
+
+    public Entity()
+    {
+
+    }
 
     public Entity(string name)
     {
@@ -31,10 +38,34 @@ public abstract class Entity
 
     }
 
+    public void TransferCurrency(Entity recipient, float amount)
+    {
+        Currency -= amount;
+        recipient.Currency += amount;
+    }
+
+    public void TransferCurrency(Player recipient, float amount)
+    {
+        Currency -= amount;
+        recipient.Currency += amount;
+    }
+
+    public void TransferResource(Entity recipient, ResourceUtil.ResourceType type, float amount)
+    {
+        Inventory[type].Amount -= amount;
+        recipient.Inventory[type].Amount += amount;
+    }
+
+    public void TransferResource(Player recipient, ResourceUtil.ResourceType type, float amount)
+    {
+        Inventory[type].Amount -= amount;
+        recipient.IncrementResource(type, amount);
+    }
+
     public void AddResource(Resource resource, InventoryItem.ActionType action, float max, float ideal, float amount = 0)
     {
-        float priceMin = (float)Math.Round(resource.BasePrice - resource.BasePrice * 0.2);
-        float priceMax = (float)Math.Round(resource.BasePrice + resource.BasePrice * 0.2);
+        float priceMin = (float)Math.Floor(resource.BasePrice);
+        float priceMax = (float)Math.Ceiling(resource.BasePrice + resource.BasePrice * 0.75f);
         PriceRange priceRange = new PriceRange(priceMin, priceMax);
 
         InventoryItem row = new InventoryItem(resource, action, priceRange, max, ideal, amount);
@@ -225,9 +256,10 @@ public abstract class Entity
 
             resource.PriceRange.GrowMax(magnitude);
 
-            //Make sure the max price never exceeds 100 times the base price.
-            resource.PriceRange.Max = resource.PriceRange.Max <= ResourceUtil.GetResourceByType(resource.Resource.Type).BasePrice * 100 ? resource.PriceRange.Max : ResourceUtil.GetResourceByType(resource.Resource.Type).BasePrice * 100;
         }
+    
+        //Make sure the max price never exceeds 50 times the base price or below base price
+        resource.PriceRange.Max = resource.PriceRange.Max <= ResourceUtil.GetResourceByType(resource.Resource.Type).BasePrice * _maxPriceFactor ? resource.PriceRange.Max : ResourceUtil.GetResourceByType(resource.Resource.Type).BasePrice * _maxPriceFactor;
     }
 
     public void UpdateAskPriceBelief(Market market, InventoryItem resource, bool askAccepted)
@@ -283,6 +315,10 @@ public abstract class Entity
 
             resource.PriceRange.GrowMin(magnitude);
         }
+
+        //Make sure the max price never exceeds 50 times the base price
+        resource.PriceRange.Max = resource.PriceRange.Max <= ResourceUtil.GetResourceByType(resource.Resource.Type).BasePrice * _maxPriceFactor ? resource.PriceRange.Max : ResourceUtil.GetResourceByType(resource.Resource.Type).BasePrice * _maxPriceFactor;
+        resource.PriceRange.Min = resource.PriceRange.Min > ResourceUtil.GetResourceByType(resource.Resource.Type).BasePrice ? resource.PriceRange.Min : ResourceUtil.GetResourceByType(resource.Resource.Type).BasePrice;
     }
 
     public float FindFavorability(PriceRange range, float mean)

@@ -15,13 +15,17 @@ public class AgentEntity : Entity
     private const float _overpayFactor = 0.5f;
     private const float _underchargingFactor = 0.5f;
 
+    private const float _productionPenaltyAmount = 5;
+
     private int _profitLedgerLimit = 1000;
 
     public float CurrencyLastRound { get; private set; }
     public List<float> ProfitLedger { get; set; }
     public Town Town;
+    public Guild Guild { get; set; }
     public Resource CommodityProduced { get; set; }
-    public int RoundsWithoutProduction { get; set; }
+    private int RoundsWithoutProduction { get; set; }
+    public int TotalRoundsWithoutProduction { get; set; }
     public int RoundsWithoutTrading { get; set; }
     public int NumberOfAuctions { get; set; }
 
@@ -52,6 +56,7 @@ public class AgentEntity : Entity
         if (action == InventoryItem.ActionType.sell)
         {
             CommodityProduced = resource;
+            AddSelfToGuild(resource);
         }
 
         Inventory.Add(resource.Type, row);
@@ -68,6 +73,11 @@ public class AgentEntity : Entity
         Town.AddAgentToMarket(resource, this);
     }
 
+    public void AddSelfToGuild(Resource resource)
+    {
+        Town.AddAgentToGuild(this);
+    }
+
     public new void RemoveMarket(ResourceUtil.ResourceType type)
     {
         Markets.Remove(type);
@@ -78,6 +88,7 @@ public class AgentEntity : Entity
         float profit = Currency - CurrencyLastRound;
         CurrencyLastRound = Currency;
         AddProfit(profit);
+        DonateProfitsToGuild();
     }
 
     private void AddProfit(float profit)
@@ -93,6 +104,27 @@ public class AgentEntity : Entity
     public float ProfitToDate()
     {
         return ProfitLedger.Sum();
+    }
+
+    public void DonateResourceToGuild(float amount = 1)
+    {
+        if (Inventory[CommodityProduced.Type].Amount >= amount)
+        {
+            Inventory[CommodityProduced.Type].Amount -= amount;
+            Guild.AddToPool(amount);
+        }
+    }
+
+    public void DonateProfitsToGuild()
+    {
+        float profits = ProfitLedger[ProfitLedger.Count - 1];
+        float donation;
+
+        if (profits > 0)
+        {
+            donation = (float)Math.Floor(profits * 0.30f);
+            Guild.AddToProfits(donation);
+        }
     }
 
     public void PerformProduction()
@@ -146,12 +178,11 @@ public class AgentEntity : Entity
             float toolsCost = Inventory[ResourceUtil.ResourceType.tools].PriceRange.Mean;
 
             Inventory[produce].CostToProduce = (float)Math.Round(consumedResourceCost / amountProduced + toolsCost * brokenTools);
-
+            RoundsWithoutProduction = 0;
         }
         else
         {
-            Currency -= 2;
-            RoundsWithoutProduction++;
+            ProductionPenalty();
         }
     }
 
@@ -198,12 +229,11 @@ public class AgentEntity : Entity
             float toolsCost = Inventory[ResourceUtil.ResourceType.tools].PriceRange.Mean;
 
             Inventory[ResourceUtil.ResourceType.ore].CostToProduce = (float)Math.Round(wheatCost / amountProduced + woodCost / amountProduced + toolsCost * brokenTools);
-
+            RoundsWithoutProduction = 0;
         }
         else
         {
-            Currency -= 2;
-            RoundsWithoutProduction++;
+            ProductionPenalty();
         }
     }
 
@@ -235,15 +265,13 @@ public class AgentEntity : Entity
             float wheatCost = Inventory[ResourceUtil.ResourceType.wheat].PriceRange.Mean;
             float oreCost = Inventory[ResourceUtil.ResourceType.ore].PriceRange.Mean;
             float toolsCost = Inventory[ResourceUtil.ResourceType.tools].PriceRange.Mean;
-
-
-
-            Inventory[ResourceUtil.ResourceType.metal].CostToProduce = (float)Math.Round(wheatCost / amountProduced + oreCost * amountProduced + toolsCost * brokenTools);
+            
+            Inventory[ResourceUtil.ResourceType.metal].CostToProduce = (float)Math.Round(wheatCost / amountProduced + oreCost + toolsCost * brokenTools);
+            RoundsWithoutProduction = 0;
         }
         else
         {
-            Currency -= 2;
-            RoundsWithoutProduction++;
+            ProductionPenalty();
         }
 
     }
@@ -259,12 +287,12 @@ public class AgentEntity : Entity
             Inventory[ResourceUtil.ResourceType.metal].Amount = 0;
             Inventory[ResourceUtil.ResourceType.wheat].Amount -= 1;
 
-            Inventory[ResourceUtil.ResourceType.tools].CostToProduce = (float)Math.Round(Inventory[ResourceUtil.ResourceType.wheat].PriceRange.Mean / amountProduced + Inventory[ResourceUtil.ResourceType.metal].PriceRange.Mean * amountProduced);
+            Inventory[ResourceUtil.ResourceType.tools].CostToProduce = (float)Math.Round(Inventory[ResourceUtil.ResourceType.wheat].PriceRange.Mean / amountProduced + Inventory[ResourceUtil.ResourceType.metal].PriceRange.Mean);
+            RoundsWithoutProduction = 0;
         }
         else
         {
-            Currency = Currency - 2;
-            RoundsWithoutProduction++;
+            ProductionPenalty();
         }
     }
 
@@ -280,6 +308,23 @@ public class AgentEntity : Entity
         {
             return false;
         }
+
+    }
+
+    private void ProductionPenalty()
+    {
+        RoundsWithoutProduction++;
+
+        int penaltyModifier = RoundsWithoutProduction / 5;
+
+        float penaltyAmount = _productionPenaltyAmount;
+        
+        penaltyAmount += penaltyAmount * penaltyModifier;
+
+        Currency -= penaltyAmount;
+        Town.Currency += penaltyAmount;
+
+        TotalRoundsWithoutProduction++;
 
     }
 }

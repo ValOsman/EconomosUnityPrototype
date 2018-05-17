@@ -179,7 +179,7 @@ public class Market
         {
             if (DemandThisRound() > 0)
             {
-                if ((DemandThisRound() - SupplyThisRound()) / DemandThisRound() * 100 >= 50) // check to see how much more demand there is than supply
+                if ((DemandThisRound() - SupplyThisRound()) / DemandThisRound() * 100 >= 75) // check to see how much more demand there is than supply
                 {
                     Town.SpawnAgent(Resource.ProducedBy);
                     Console.WriteLine(String.Format("Round: {0}, Town: {1}; Market: {2}; Supply: {3}, Demand: {4}", TimeUtil.Rounds, Town.Name, Resource.DisplayName, Supply, Demand));

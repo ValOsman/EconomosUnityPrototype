@@ -20,7 +20,7 @@ public class InventoryItem
         get { return _amount; }
         set
         {
-            if (value + _amount > Max)
+            if (value > Max)
             {
                 _amount = Max;
             }

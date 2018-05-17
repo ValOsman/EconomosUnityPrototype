@@ -10,7 +10,6 @@ public class ShowTownMenu : MonoBehaviour {
 
     [SerializeField]
     private Canvas townMenu;
-    private Text priceMenu;
     private Transform priceMenuGrid;
     private Dictionary<Transform, ResourceUtil.ResourceType> rows;
     public RectTransform priceMenuRow;
@@ -29,10 +28,21 @@ public class ShowTownMenu : MonoBehaviour {
             string resourceName = market.Value.Resource.DisplayName;
             Transform row = Instantiate(priceMenuRow, priceMenuGrid.transform, false);
             row.name = resourceName + "Row";
+
+            string buyPrice = townManager.town.Guilds[market.Value.Resource.ProducedBy].Price.ToString();
+            string sellPrice = market.Value.MarketPrice.ToString();
+
+            Transform buyPanel = row.transform.Find("BuyPanel");
+            Transform sellPanel = row.transform.Find("SellPanel");
+
             row.transform.Find("ResourceLabel").GetComponent<Text>().text = resourceName;
-            row.transform.Find("Price").GetComponent<Text>().text = market.Value.MarketPrice.ToString();
-            row.transform.Find("BuyButton").GetComponent<Button>().onClick.AddListener(PlayerBuyGood);
-            row.transform.Find("SellButton").GetComponent<Button>().onClick.AddListener(PlayerSellGood);
+            buyPanel.transform.Find("BuyPrice").GetComponent<Text>().text = buyPrice;
+            sellPanel.transform.Find("SellPrice").GetComponent<Text>().text = sellPrice;
+
+            //row.transform.Find("BuyPanel").transform.Find("BuyButton").GetComponent<Text>().text = buyPrice;
+            //row.transform.Find("SellPanel").transform.Find("SellButton").GetComponent<Text>().text = sellPrice;
+            buyPanel.transform.Find("BuyButton").GetComponent<Button>().onClick.AddListener(PlayerBuyGood);
+            sellPanel.transform.Find("SellButton").GetComponent<Button>().onClick.AddListener(PlayerSellGood);
 
             rows.Add(row, market.Value.Resource.Type);
 
@@ -59,30 +69,36 @@ public class ShowTownMenu : MonoBehaviour {
     }
 
     public void UpdatePrices()
-    {
+    {        
         foreach (KeyValuePair<ResourceUtil.ResourceType, Market> market in townManager.town.Markets)
         {
+            Guild guild = townManager.town.Guilds[market.Value.Resource.ProducedBy];
             string resourceName = market.Value.Resource.DisplayName;
             float marketPrice = market.Value.MarketPrice;
+            float guildPrice = guild.Price;
+
+            string buyPrice = guildPrice.ToString();
+            string sellPrice = marketPrice.ToString();
 
             Transform row = priceMenuGrid.transform.Find(resourceName + "Row");
-            row.transform.Find("Price").GetComponent<Text>().text = marketPrice.ToString();
-
+            row.transform.Find("BuyPanel").transform.Find("BuyPrice").GetComponent<Text>().text = buyPrice;
+            row.transform.Find("SellPanel").transform.Find("SellPrice").GetComponent<Text>().text = sellPrice;
             
-
         }
-
+                
     }
 
     public void PlayerBuyGood()
     {      
 
-        Transform row = EventSystem.current.currentSelectedGameObject.transform.parent;
+        Transform row = EventSystem.current.currentSelectedGameObject.transform.parent.transform.parent;
         ResourceUtil.ResourceType type = rows[row];
+        Entity.EntityType agentType = ResourceUtil.GetResourceByType(type).ProducedBy;
+        Guild guild = townManager.town.Guilds[agentType];
 
-        float price = townManager.town.Markets[type].MarketPrice;        
-        List<Entity> availableAsks = townManager.town.Markets[type].AskLedger;
-
+        float price = guild.Price;
+    
+        
         if (PlayerManager.player.HasResource(type) == false)
         {
             PlayerManager.player.AddResource(type);
@@ -90,22 +106,9 @@ public class ShowTownMenu : MonoBehaviour {
 
         if (PlayerManager.player.ResourceInventory[type].Amount < PlayerManager.player.ResourceInventory[type].Max)
         {
-            PlayerManager.player.IncrementResource(type);
-            PlayerManager.player.Currency -= price;
+            guild.TransferResource(PlayerManager.player, type, 1);
+            PlayerManager.player.TransferCurrency(guild, price);
             EventManager.TriggerEvent("UpdateCurrency");
-
-            if (availableAsks.Count > 0)
-            {
-                availableAsks[0].Inventory[type].Offer.Amount -= 1;
-                availableAsks[0].Inventory[type].Amount -= 1;
-                availableAsks[0].Currency += price;
-
-                if (availableAsks[0].Inventory[type].Offer.Amount < 1)
-                {
-                    availableAsks.RemoveAt(0);
-                }
-            }
-
         }
 
 
@@ -115,33 +118,18 @@ public class ShowTownMenu : MonoBehaviour {
 
     public void PlayerSellGood()
     {
-        Transform row = EventSystem.current.currentSelectedGameObject.transform.parent;
+        Transform row = EventSystem.current.currentSelectedGameObject.transform.parent.transform.parent;
         ResourceUtil.ResourceType type = rows[row];
 
         float price = townManager.town.Markets[type].MarketPrice;
-        List<Entity> availableBids = townManager.town.Markets[type].BidLedger;
-
+        
         if (PlayerManager.player.HasResource(type))
         {
             if (PlayerManager.player.ResourceInventory[type].Amount > 0)
             {
-                PlayerManager.player.DecrementResource(type);
-                PlayerManager.player.Currency += price;
-                EventManager.TriggerEvent("UpdateCurrency");
-
-                if (availableBids.Count > 0)
-                {
-                    availableBids[0].Inventory[type].Offer.Amount -= 1;
-                    availableBids[0].Inventory[type].Amount += 1;
-                    availableBids[0].Currency += price;
-
-                    if (availableBids[0].Inventory[type].Offer.Amount < 1)
-                    {
-                        availableBids.RemoveAt(0);
-                    }
-                }
-
-
+                PlayerManager.player.TransferResource(townManager.town, type, 1);
+                townManager.town.TransferCurrency(PlayerManager.player, price);
+                EventManager.TriggerEvent("UpdateCurrency");                
             }
         }
 
